@@ -75,9 +75,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # or whatever port your React app runs on
-]
+CORS_ALLOW_ALL_ORIGINS = True
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -110,8 +109,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 import os
 import os
 
-if os.environ.get("MYSQLHOST") is not None:
-    # Railway Production Database
+if os.environ.get("MYSQLHOST"):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -123,18 +121,16 @@ if os.environ.get("MYSQLHOST") is not None:
         }
     }
 else:
-    # Local Database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'pms_react',
             'USER': 'root',
-            'PASSWORD': 'root',   # change if your MySQL password is different
-            'HOST': '127.0.0.1',  # IMPORTANT: not None
+            'PASSWORD': 'root',
+            'HOST': '127.0.0.1',
             'PORT': '3306',
         }
     }
-
 
 
 # Password validation
