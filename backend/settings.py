@@ -20,12 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f7o*c0*5oon$qg9xh+)z(-t^uzxz5%btyhnh!f-@*@xjv!l0p('
+import os
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-local-dev-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['*']
+
 
 CORS_ALLOW_HEADERS = ['*']
 CORS_ALLOW_METHODS = ['*']
@@ -56,7 +59,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': ['redis://127.0.0.1:6379'],
+            'hosts': [os.environ.get("REDIS_URL", "redis://localhost:6379")],
         },
     },
 }
@@ -66,7 +69,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -104,17 +107,34 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+import os
+import os
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':   'pms_react',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',  # or your MySQL server host
-        'PORT': '3306',  
+if os.environ.get("MYSQLHOST") is not None:
+    # Railway Production Database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get("MYSQLDATABASE"),
+            'USER': os.environ.get("MYSQLUSER"),
+            'PASSWORD': os.environ.get("MYSQLPASSWORD"),
+            'HOST': os.environ.get("MYSQLHOST"),
+            'PORT': os.environ.get("MYSQLPORT"),
+        }
     }
-}
+else:
+    # Local Database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'pms_react',
+            'USER': 'root',
+            'PASSWORD': 'root',   # change if your MySQL password is different
+            'HOST': '127.0.0.1',  # IMPORTANT: not None
+            'PORT': '3306',
+        }
+    }
+
 
 
 # Password validation
@@ -151,7 +171,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
