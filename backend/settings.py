@@ -109,29 +109,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 import os
 import os
 
-if os.environ.get("MYSQLHOST"):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ.get("MYSQLDATABASE"),
-            'USER': os.environ.get("MYSQLUSER"),
-            'PASSWORD': os.environ.get("MYSQLPASSWORD"),
-            'HOST': os.environ.get("MYSQLHOST"),
-            'PORT': os.environ.get("MYSQLPORT"),
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'pms_react',
-            'USER': 'root',
-            'PASSWORD': 'root',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        }
-    }
+import dj_database_url
 
+DATABASES = {
+    'default': dj_database_url.parse(
+        os.environ.get("DATABASE_URL")
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
