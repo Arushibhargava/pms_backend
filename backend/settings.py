@@ -66,10 +66,10 @@ CHANNEL_LAYERS = {
 }
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', 
-    'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',   # ALWAYS FIRST
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
