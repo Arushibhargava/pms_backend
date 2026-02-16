@@ -928,21 +928,35 @@ class UserInfoAPIView(APIView):
 
 
 class Fetch_all_user(APIView):
-    
-    permission_classes=[IsAuthenticated]
-    def get(self,request):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
         try:
-            user_type=request.GET.get("user_type")
-            if user_type!='coordinator':
-                return Response({"error":"you cant access all the teams"},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-            else:
-                team=User.filter(user_type='team')
-                mentor=User.filter(user_type='mentor')
-                team_serializer=UserSerializer(team,many=True)
-                mentor_serializer=UserSerializer(mentor,many=True)
-                return Response(team_serializer.data,mentor_serializer.data)
-        except User.DoesNotExist:
-            return Response({"error":"user not found"},status=status.HTTP_401_UNAUTHORIZED)
+            user_type = request.GET.get("user_type")
+
+            if user_type != 'coordinator':
+                return Response(
+                    {"error": "You cannot access users"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            teams = User.objects.filter(user_type='team')
+            mentors = User.objects.filter(user_type='mentor')
+
+            team_serializer = UserSerializer(teams, many=True)
+            mentor_serializer = UserSerializer(mentors, many=True)
+
+            return Response({
+                "teams": team_serializer.data,
+                "mentors": mentor_serializer.data
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class Coordinator_SendNotificationView(APIView):
     permission_classes = [IsAuthenticated]
