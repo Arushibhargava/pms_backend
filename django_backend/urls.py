@@ -36,6 +36,6 @@ urlpatterns = [
      path('coordinator/project/',  CProjectListAPIView.as_view(), name='mmarks-api'),
 
       path('mentor/marks/', MentorAllocatedTeamsAPIView.as_view(), name='mmarks-api'),
-    path('coordinator/fetch_users',Fetch_all_user.as_view(),name='fetch_users'),
-    path('coordinator/sendnotification',Coordinator_SendNotificationView.as_view(),name="send_notification")
+    path('coordinator/fetch_users/',Fetch_all_user.as_view(),name='fetch_users'),
+    path('coordinator/sendnotification/',Coordinator_SendNotificationView.as_view(),name="send_notification")
 ]
