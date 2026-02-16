@@ -4,7 +4,7 @@ from .views import NotificationListAPIView,WeeklyProgressUpdateView,WeeklyProgre
 from .views import TeamTaskListAPI, TaskFileUploadAPI,MentorTeamsView,MentorWeeklyProgressAPIView,UpdateMentorMarksAPIView,SubmitProjectAPIView,UpdateProjectApprovalAPIView,MentorAllocatedTeamsAPIView
 from django.conf import settings
 from django.conf.urls.static import static
-
+from .views import Coordinator_SendNotificationView,Fetch_all_user
 urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', CustomLoginView.as_view(), name='custom_login'),
@@ -36,4 +36,6 @@ urlpatterns = [
      path('coordinator/project/',  CProjectListAPIView.as_view(), name='mmarks-api'),
 
       path('mentor/marks/', MentorAllocatedTeamsAPIView.as_view(), name='mmarks-api'),
+    path('coordinator/fetch_users',Fetch_all_user.as_view(),name='fetch_users'),
+    path('coordinator/sendnotification',Coordinator_SendNotificationView.as_view(),name="send_notification")
 ]

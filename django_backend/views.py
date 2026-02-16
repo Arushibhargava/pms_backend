@@ -925,3 +925,83 @@ class UserInfoAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class Fetch_all_user(APIView):
+    
+    permission_classes=[IsAuthenticated]
+    def get(self,request):
+        try:
+            user_type=request.GET.get("user_type")
+            if user_type!='coordinator':
+                return Response({"error":"you cant access all the teams"},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+            else:
+                team=User.filter(user_type='team')
+                mentor=User.filter(user_type='mentor')
+                team_serializer=UserSerializer(team,many=True)
+                mentor_serializer=UserSerializer(mentor,many=True)
+                return Response(team_serializer.data,mentor_serializer.data)
+        except User.DoesNotExist:
+            return Response({"error":"user not found"},status=status.HTTP_401_UNAUTHORIZED)
+
+class Coordinator_SendNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            sender = request.user
+            target = request.data.get('target')
+            receiver_username = request.data.get('receiver')
+            message = request.data.get('message')
+
+            print("Sender:", sender)
+            print("Target:", target)
+            print("Receiver:", receiver_username)
+            print("Message:", message)
+
+            if not message:
+                return Response({"error": "Message is required"}, status=400)
+
+            # ✅ Decide receivers
+            if target == "all_teams":
+                receivers = User.objects.filter(user_type='team')
+
+            elif target == "all_mentors":
+                receivers = User.objects.filter(user_type='mentor')
+
+            elif target == "single":
+                if not receiver_username:
+                    return Response({"error": "Receiver required"}, status=400)
+
+                receivers = User.objects.filter(username=receiver_username)
+
+            else:
+                return Response({"error": "Invalid target"}, status=400)
+
+            # ✅ Create notifications
+            notifications = []
+            for receiver in receivers:
+                notifications.append(
+                    Notification(sender=sender, receiver=receiver, message=message)
+                )
+
+            Notification.objects.bulk_create(notifications)
+
+            # ✅ Send WebSocket notifications
+            channel_layer = get_channel_layer()
+
+            for receiver in receivers:
+                async_to_sync(channel_layer.group_send)(
+                    f'notifications_{receiver.username}',
+                    {
+                        'type': 'send_notification',
+                        'message': message,
+                        'sender': sender.username
+                    }
+                )
+
+            return Response({"status": "sent"}, status=201)
+
+        except Exception as e:
+            print("🚨 Notification Error:", str(e))
+            return Response({"error": str(e)}, status=500)
